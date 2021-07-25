@@ -664,17 +664,17 @@ func configExchange(ctx context.Context, name string, m configmap.Mapper, oauthC
 
 	// baidupan requires the config be added to the URL directly, which is not supported by golang.org/x/oauth2
 	// So hoxfix this thing by adding the config to URL before passing to oauthConfig.Exchange()
-	// For doc of baidupan, see: https://pan.baidu.com/union/document/entrance#%E6%8E%A5%E5%85%A5%E6%B5%81%E7%A8%8B
+	// See: https://pan.baidu.com/union/document/entrance#3%E8%8E%B7%E5%8F%96%E6%8E%88%E6%9D%83
 	if strings.Contains(oauthConfig.Endpoint.TokenURL, "openapi.baidu.com") {
 		var buf bytes.Buffer
 		buf.WriteString(oauthConfig.Endpoint.TokenURL)
 		v := url.Values{
 			"grant_type": {"authorization_code"},
-			"client_id":     {oauthConfig.ClientID},
+			"client_id":  {oauthConfig.ClientID},
 			// FIXME: Why can't pass oauthConfig.ClientSecret here?
-			"client_secret":  {"Q2m4aEy7oRoTyRe0UhWZ5ZSBrqistZAX"},
-			"code": {code},
-			"redirect_uri": {oauthConfig.RedirectURL},
+			"client_secret": {"Q2m4aEy7oRoTyRe0UhWZ5ZSBrqistZAX"},
+			"code":          {code},
+			"redirect_uri":  {oauthConfig.RedirectURL},
 		}
 		buf.WriteByte('?')
 		buf.WriteString(v.Encode())
