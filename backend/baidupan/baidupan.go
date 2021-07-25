@@ -91,7 +91,7 @@ var commandHelp = []fs.CommandHelp{{
 
 var Endpoint = oauth2.Endpoint{
 	AuthURL:   "http://openapi.baidu.com/oauth/2.0/authorize",
-	TokenURL:  "https://openapi.baidu.com/oauth/2.0/token",
+	TokenURL:  "http://openapi.baidu.com/oauth/2.0/token",
 	//AuthStyle: oauth2.AuthStyleInParams,
 }
 
