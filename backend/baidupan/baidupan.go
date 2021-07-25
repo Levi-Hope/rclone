@@ -109,18 +109,24 @@ var (
 
 func Config(ctx context.Context, name string, m configmap.Mapper, config fs.ConfigIn) (*fs.ConfigOut, error) {
 
+	if config.State == ""{
+		opts := []oauth2.AuthCodeOption{
+			oauth2.SetAuthURLParam("display", "tv"),
+			oauth2.SetAuthURLParam("qrcode", "1"),
+			oauth2.SetAuthURLParam("force_login", "1"),
+		}
 
-	opts := []oauth2.AuthCodeOption{
-		oauth2.SetAuthURLParam("display", "tv"),
-		oauth2.SetAuthURLParam("qrcode", "1"),
-		oauth2.SetAuthURLParam("force_login", "1"),
+		return oauthutil.ConfigOut("choose_type", &oauthutil.Options{
+			OAuth2Config: oauthConfig,
+			OAuth2Opts: opts,
+		})
 	}
 
-	return oauthutil.ConfigOut("choose_type", &oauthutil.Options{
-		OAuth2Config: oauthConfig,
-		OAuth2Opts: opts,
-	})
-	return nil, nil
+	switch config.State {
+	case "choose_type":
+		return fs.ConfigGoto(config.Result)
+	}
+	return nil, fmt.Errorf("unknown state %q", config.State)
 }
 
 func init(){
