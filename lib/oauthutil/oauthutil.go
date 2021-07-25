@@ -647,7 +647,7 @@ func configSetup(ctx context.Context, id, name string, m configmap.Mapper, oauth
 	if !auth.OK || auth.Code == "" {
 		return "", auth
 	}
-	fs.Logf(nil, "Got code\n")
+	fs.Logf(nil, "Got code %s\n", auth.Code)
 	if opt.CheckAuth != nil {
 		err = opt.CheckAuth(oauthConfig, auth)
 		if err != nil {
