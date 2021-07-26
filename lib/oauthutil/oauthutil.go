@@ -1,6 +1,7 @@
 package oauthutil
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -647,7 +648,7 @@ func configSetup(ctx context.Context, id, name string, m configmap.Mapper, oauth
 	if !auth.OK || auth.Code == "" {
 		return "", auth
 	}
-	fs.Logf(nil, "Got code\n")
+	fs.Logf(nil, "Got code %s\n", auth.Code)
 	if opt.CheckAuth != nil {
 		err = opt.CheckAuth(oauthConfig, auth)
 		if err != nil {
@@ -660,6 +661,27 @@ func configSetup(ctx context.Context, id, name string, m configmap.Mapper, oauth
 // Exchange the code for a token
 func configExchange(ctx context.Context, name string, m configmap.Mapper, oauthConfig *oauth2.Config, code string) error {
 	ctx = Context(ctx, fshttp.NewClient(ctx))
+
+	// baidupan requires the config be added to the URL directly, which is not supported by golang.org/x/oauth2
+	// So hoxfix this thing by adding the config to URL before passing to oauthConfig.Exchange()
+	// See: https://pan.baidu.com/union/document/entrance#3%E8%8E%B7%E5%8F%96%E6%8E%88%E6%9D%83
+	if strings.Contains(oauthConfig.Endpoint.TokenURL, "openapi.baidu.com") {
+		var buf bytes.Buffer
+		buf.WriteString(oauthConfig.Endpoint.TokenURL)
+		v := url.Values{
+			"grant_type": {"authorization_code"},
+			"client_id":  {oauthConfig.ClientID},
+			// FIXME: Why can't pass oauthConfig.ClientSecret here?
+			"client_secret": {"Q2m4aEy7oRoTyRe0UhWZ5ZSBrqistZAX"},
+			"code":          {code},
+			"redirect_uri":  {oauthConfig.RedirectURL},
+		}
+		buf.WriteByte('?')
+		buf.WriteString(v.Encode())
+		oauthConfig.Endpoint.TokenURL = buf.String()
+		fs.Debugf(nil, "Retrieving Token from %s", oauthConfig.Endpoint.TokenURL)
+	}
+
 	token, err := oauthConfig.Exchange(ctx, code)
 	if err != nil {
 		return errors.Wrap(err, "failed to get token")

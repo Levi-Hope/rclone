@@ -144,6 +144,9 @@ func ListR(ctx context.Context, f fs.Fs, path string, includeAll bool, maxLevel 
 	// FIXME disable this with --no-fast-list ??? `--disable ListR` will do it...
 	doListR := f.Features().ListR
 
+	// FIXME: Just For Experiment
+	return listRwalk(ctx, f, path, includeAll, maxLevel, listType, fn)
+
 	// Can't use ListR if...
 	if doListR == nil || // ...no ListR
 		fi.HaveFilesFrom() || // ...using --files-from
